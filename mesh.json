@@ -1,0 +1,28 @@
+{
+"meshConfig": {
+    "sources": [
+      {
+        "name": "aemPersistedQuery",
+        "handler": {
+          "openapi": {
+            "source": "https://publish-p64656-e547802.adobeaemcloud.com/graphql/execute.json",
+            "selectQueryOrMutationField": [
+              {
+                "title": "adventures-all",
+                "path": "/wknd-shared/adventures-all",
+                "method": "get",
+                "type": "Mutation"
+              },
+              {
+                "title": "adventures-by-activity",
+                "path": "/wknd-shared/adventures-by-activity",
+                "method": "get",
+                "type": "query"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

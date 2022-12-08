@@ -1,0 +1,17 @@
+application:
+  actions: actions
+  web: web-src
+  runtimeManifest:
+    packages:
+      aem:
+        license: Apache-2.0
+        actions:
+          persistedquery:
+            function: actions/proxy/index.js
+            web: 'yes'
+            runtime: nodejs:16
+            inputs:
+              LOG_LEVEL: debug
+            annotations:
+              require-adobe-auth: false
+              final: true
