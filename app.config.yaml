@@ -6,7 +6,7 @@ application:
       aem:
         license: Apache-2.0
         actions:
-          persistedquery:
+          proxy:
             function: actions/proxy/index.js
             web: 'yes'
             runtime: nodejs:16
