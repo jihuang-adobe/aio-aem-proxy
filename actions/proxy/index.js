@@ -39,6 +39,11 @@ async function main (params) {
       return errorResponse(400, errorMessage, logger)
     }
 
+    if (!params.__ow_headers['aem-url'].match(/adobeaemcloud\.com/i)) {
+      // return and log client errors
+      return errorResponse(400, 'invalid aem-url', logger)
+    }
+
     // extract the user Bearer token from the Authorization header
     const token = getBearerToken(params)
 
