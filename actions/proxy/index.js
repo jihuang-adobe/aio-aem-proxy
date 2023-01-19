@@ -16,7 +16,7 @@
 
 const fetch = require('node-fetch')
 const { Core } = require('@adobe/aio-sdk')
-const { errorResponse, getBearerToken, stringParameters, checkMissingRequestInputs } = require('../utils')
+const { errorResponse, getBearerToken, getReferer, stringParameters, checkMissingRequestInputs } = require('../utils')
 
 // main function that will be executed by Adobe I/O Runtime
 async function main (params) {
@@ -29,6 +29,21 @@ async function main (params) {
 
     // log parameters, only if params.LOG_LEVEL === 'debug'
     logger.debug(stringParameters(params))
+
+    // get referrer
+    const referer = getReferer(params)
+
+    // return if OPTIONS
+    if (params.__ow_method.toLowerCase() == "options") {
+      return {
+        headers: {
+          'Access-Control-Allow-Origin': referer,
+          'Access-Control-Allow-Credentials': true,
+          'Access-Control-Allow-Headers': 'Authorization, content-type, aem-url'
+        },
+        statusCode: 200
+      }
+    }
 
     // check for missing request input parameters and headers
     const requiredParams = []
@@ -44,17 +59,23 @@ async function main (params) {
       return errorResponse(400, 'invalid aem-url', logger)
     }
 
-    // extract the user Bearer token from the Authorization header
-    const token = getBearerToken(params)
+    // get authorization
+    const authorization = params.__ow_headers.authorization
 
     // replace this with the api you want to access
-    const apiEndpoint = params.__ow_headers['aem-url']
+    const apiEndpoint = params.__ow_headers['aem-url'].replace(/\/+$/, '')
     const persistedQueryPath = params.__ow_path.replace(';', '%3B')
 
     // fetch content from external api endpoint
-    const res = await fetch(apiEndpoint + persistedQueryPath)
+    const res = await fetch(
+        apiEndpoint + persistedQueryPath, {
+          headers: {
+            authorization: authorization
+          }
+        }
+    )
     if (!res.ok) {
-      throw new Error('request to ' + apiEndpoint + ' failed with status code ' + res.status)
+      throw new Error('request to ' + apiEndpoint + persistedQueryPath + ' with authorization ' +  authorization + ' failed with status code ' + res.status)
     }
     
     logger.debug(apiEndpoint + persistedQueryPath)
@@ -63,6 +84,11 @@ async function main (params) {
 
     const response = {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': referer,
+        'Access-Control-Allow-Credentials': true,
+        'testing': Date.now()
+      },
       body: content
     }
 
@@ -74,7 +100,7 @@ async function main (params) {
     // log any server errors
     logger.error(error)
     // return with 500
-    return errorResponse(500, 'server error', logger)
+    return errorResponse(500, 'server error: ' + error, logger)
   }
 }
 

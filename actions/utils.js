@@ -103,6 +103,22 @@ function getBearerToken (params) {
 }
 /**
  *
+ * Extracts the referer string from the header in the request parameters.
+ *
+ * @param {object} params action input parameters.
+ *
+ * @returns {string|undefined} the referer string or undefined if not set in request headers.
+ *
+ */
+function getReferer (params) {
+  if (params.__ow_headers &&
+      params.__ow_headers.referer) {
+    return params.__ow_headers.referer.replace(/\/+$/, '')
+  }
+  return undefined
+}
+/**
+ *
  * Returns an error response object and attempts to log.info the status code and error message
  *
  * @param {number} statusCode the error status code.
@@ -132,6 +148,7 @@ function errorResponse (statusCode, message, logger) {
 module.exports = {
   errorResponse,
   getBearerToken,
+  getReferer,
   stringParameters,
   checkMissingRequestInputs
 }

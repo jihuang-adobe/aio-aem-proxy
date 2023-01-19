@@ -15,3 +15,4 @@ application:
             annotations:
               require-adobe-auth: false
               final: true
+              web-custom-options: true
