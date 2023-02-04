@@ -84,6 +84,20 @@ function checkMissingRequestInputs (params, requiredParams = [], requiredHeaders
   return errorMessage
 }
 
+function checkInAllowList (arrayList, checkString) {
+  let errorMessage = checkString + ' not in allow list'
+
+  arrayList.forEach(v => {
+    if (checkString.toLowerCase().includes(v.toLowerCase())) {
+      // is in the list
+      errorMessage = null
+      return
+    }
+  });
+
+  return errorMessage
+}
+
 /**
  *
  * Extracts the bearer token string from the Authorization header in the request parameters.
@@ -150,5 +164,6 @@ module.exports = {
   getBearerToken,
   getReferer,
   stringParameters,
-  checkMissingRequestInputs
+  checkMissingRequestInputs,
+  checkInAllowList
 }

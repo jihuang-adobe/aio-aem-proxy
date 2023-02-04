@@ -12,6 +12,8 @@ application:
             runtime: nodejs:16
             inputs:
               LOG_LEVEL: debug
+              allowlist_origin: ["csb.app", "cdpn.io", "github.io"]
+              allowlist_destination: ["adobeaemcloud.com"]
             annotations:
               require-adobe-auth: false
               final: true

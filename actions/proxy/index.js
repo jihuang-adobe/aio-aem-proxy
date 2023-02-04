@@ -16,14 +16,14 @@
 
 const fetch = require('node-fetch')
 const { Core } = require('@adobe/aio-sdk')
-const { errorResponse, getBearerToken, getReferer, stringParameters, checkMissingRequestInputs } = require('../utils')
+const { errorResponse, getBearerToken, getReferer, stringParameters, checkMissingRequestInputs, checkInAllowList } = require('../utils')
 
 // main function that will be executed by Adobe I/O Runtime
 async function main (params) {
   // create a Logger
   const logger = Core.Logger('main', { level: params.LOG_LEVEL || 'info' })
 
-  try {
+  try {  
     // 'info' is the default level if not set
     logger.info('Calling the main action')
 
@@ -32,6 +32,20 @@ async function main (params) {
 
     // get referrer
     const referer = getReferer(params)
+
+    // get allow list origin
+    const allowlistOrigin = params.allowlist_origin
+
+    // get domain and hostname
+    const domain = (new URL(referer))
+    const hostname = domain.hostname
+
+    // check allow list for origin
+    const errorMessageAllowListOrigin = checkInAllowList(allowlistOrigin, hostname)
+    if (errorMessageAllowListOrigin) {
+      // return and log client errors
+      return errorResponse(400, errorMessageAllowListOrigin, logger)
+    }
 
     // return if OPTIONS
     if (params.__ow_method.toLowerCase() == "options") {
@@ -54,16 +68,24 @@ async function main (params) {
       return errorResponse(400, errorMessage, logger)
     }
 
-    if (!params.__ow_headers['aem-url'].match(/adobeaemcloud\.com/i)) {
+    // get allow list destination
+    const allowlistDestination = params.allowlist_destination
+
+    // get destination url
+    const destUrl = params.__ow_headers['aem-url']
+
+    // check allow list for destination
+    const errorMessageAllowListDestination = checkInAllowList(allowlistDestination, destUrl)
+    if (errorMessageAllowListDestination) {
       // return and log client errors
-      return errorResponse(400, 'invalid aem-url', logger)
+      return errorResponse(400, errorMessageAllowListDestination, logger)
     }
 
     // get authorization
     const authorization = params.__ow_headers.authorization
 
     // replace this with the api you want to access
-    const apiEndpoint = params.__ow_headers['aem-url'].replace(/\/+$/, '')
+    const apiEndpoint = destUrl.replace(/\/+$/, '')
     const persistedQueryPath = params.__ow_path.replace(';', '%3B')
 
     // fetch content from external api endpoint
